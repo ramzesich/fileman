@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Please, log in{% endblock %}
+
+{% block head_extra %}
+<link href="{{ STATIC_URL }}ui.css" rel="stylesheet" media="screen">
+{% endblock %}
+
+{% block content %}
+<div class="row-fluid">
+    <div class="hero-unit login-container">
+        <form class="form-horizontal" method="post">
+            <div class="control-group">
+                <div class="controls">
+                {% if form.errors %}
+                    <label class="label label-important">Your username and password didn't match. Please try again.</label>
+                {% endif %}
+                </div>
+            </div>
+            <div class="control-group">
+                <div class="controls">
+                    <input type="text" name="{{ form.username.name }}" placeholder="Username">
+                </div>
+            </div>
+            <div class="control-group">
+                <div class="controls">
+                    <input type="password" name="{{ form.password.name }}" placeholder="Password">
+                </div>
+            </div>
+            <div class="control-group">
+                <div class="controls">
+                    <input type="hidden" name="next" value="{{ next }}">
+                    <button type="submit" value="Login" class="btn">Sign in</button>
+                </div>
+            </div>
+            {% csrf_token %}
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,76 @@
+body {
+    padding-top: 20px;
+}
+
+button.btn-replication {
+    width: 60px;
+}
+
+div.login-container {
+    margin-top: 20px;
+}
+
+td.actions,
+td.remove,
+td.move {
+    width: 1px;
+}
+
+td.description {
+    width: 20%;
+}
+
+td.url {
+    width: 20%;
+}
+
+td.upload-datetime {
+    width: 10%;
+}
+
+td.sha-1 {
+    width: 20%;
+    font-family: monospace;
+}
+
+td.remote-url {
+    width: 20%;
+}
+
+td.toggle-versions {
+    width: 14px;
+}
+
+td i.icon-remove,
+td i.icon-arrow-right,
+td i.icon-chevron-right,
+td i.icon-chevron-down,
+td i.icon-pencil {
+    cursor: pointer;
+}
+
+td i.icon-pencil {
+    display: inline-block;
+    margin-right: 1em;
+}
+
+tr.previous-version {
+    display: none;
+}
+
+tr.previous-version td.url {
+    padding-left: 2em;
+}
+
+#filedescription,
+#foldername {
+    width: 515px;
+}
+
+#filedescription {
+    margin-top: 10px;
+}
+
+#fileupload {
+    margin-top: 5px;
+}

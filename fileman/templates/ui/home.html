@@ -1,0 +1,175 @@
+{% extends "ui/main.html" %}
+
+{% block title %}Filebox{% endblock %}
+
+{% block head_extra %}
+<link href="{{ STATIC_URL }}treeview.css" rel="stylesheet" media="screen">
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript" src="{{ STATIC_URL }}jquery-file-upload/js/vendor/jquery.ui.widget.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}jquery-file-upload/js/jquery.iframe-transport.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}jquery-file-upload/js/jquery.fileupload.js"></script>
+<script type="text/javascript">{% include "ui/actions.js" %}</script>
+{% endblock %}
+
+{% block content %}
+<div class="row-fluid">
+    <div class="btn-group">
+        <button class="btn" id="fileadd" title="Upload file"><i class="icon-plus"></i></button>
+        <button class="btn" id="folderadd" title="Add folder"><i class="icon-folder-open"></i></button>
+    </div>
+    {% if entries.dirs or entries.files %}
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th></th>
+                <th></th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Replication</th>
+                <th>Uploaded at</th>
+                <th>SHA-1</th>
+		<th>Remote URL</th>
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for dir in entries.dirs %}
+            <tr>
+                <td class="actions"><i class="icon-folder-close" title="folder"></i></td>
+                <td class="toggle-versions"></td>
+                <td class="url"><a href="{% url 'home' %}?location={% if location != "/" %}{{ location|urlencode }}{% endif %}/{{ dir.dirname|urlencode }}">{{ dir.dirname }}</a></td>
+                <td class="description"></td>
+                <td class="replication"></td>
+                <td class="upload-datetime"></td>
+                <td class="sha-1"></td>
+		<td class="remote-url"></td>
+                <td class="move"></td>
+                <td class="remove"><i class="icon-remove" data-itemname="{{ dir.dirname }}" data-itemtype="dir" data-empty="{{ dir.empty }}" data-message="This folder is not empty. Remove it with all the contents?" title="Remove"></i></td>
+            </tr>
+        {% endfor %}
+        {% for file in entries.files %}
+            <tr data-filename="{{ file.filename }}">
+                <td class="actions"><i class="icon-file" title="file"></i></td>
+                <td class="toggle-versions">{% if file.previous_versions %}<i class="icon-chevron-right" title="toggle previous versions"></i>{% endif %}</td>
+                <td class="url"><a href="{% url 'file_dispatcher' %}?location={% if location != "/" %}{{ location|urlencode }}{% endif %}&filename={{ file.filename }}">{{ file.filename }}</a></td>
+                <td class="description"><i class="icon-pencil pull-left" data-itemname="{{ file.filename }}" data-itemhash="{{ file.hash }}" title="edit"></i><span>{{ file.description }}</span></td>
+                <td class="replication"><button data-itemname="{{ file.filename }}" data-hashsum="{{ file.hash }}" class="btn btn-small btn-replication {% if file.replicate %}btn-success{% else %}btn-danger{% endif %}">{% if file.replicate %}On{% else %}Off{% endif %}</button></td>
+                <td class="upload-datetime">{{ file.upload_datetime }}</td>
+                <td class="sha-1">{{ file.hash }}</td>
+		<td class="remote-url"><a href="http://{{ remote_host }}{% url 'file_dispatcher' %}?location={% if location != "/" %}{{ location|urlencode }}{% endif %}&filename={{ file.filename }}">{{ file.filename }}</a></td>
+                <td class="move"><i class="icon-arrow-right" data-itemname="{{ file.filename }}" title="Move"></i></td>
+                <td class="remove"><i class="icon-remove" data-itemname="{{ file.filename }}" data-itemtype="file" data-empty="False" data-message="Remove file with all its history?" title="Remove"></i></td>
+            </tr>
+            {% for previous_version in file.previous_versions %}
+            <tr class="previous-version" data-filename="{{ file.filename }}">
+                <td class="actions"><i class="icon-file" title="file"></i></td>
+                <td class="toggle-versions"></td>
+                <td class="url"><a href="{% url 'file_dispatcher' %}?location={% if location != "/" %}{{ location|urlencode }}{% endif %}&filename={{ file.filename }}&hashsum={{ previous_version.hash }}">{{ file.filename }}</a></td>
+                <td class="description"><i class="icon-pencil pull-left" data-itemname="{{ file.filename }}" data-itemhash="{{ previous_version.hash }}" title="edit"></i><span>{{ previous_version.description }}</span></td>
+                <td class="replication"><button data-itemname="{{ file.filename }}" data-hashsum="{{ previous_version.hash }}" class="btn btn-small btn-replication {% if previous_version.replicate %}btn-success{% else %}btn-danger{% endif %}">{% if previous_version.replicate %}On{% else %}Off{% endif %}</button></td>
+                <td class="upload-datetime">{{ previous_version.upload_datetime }}</td>
+                <td class="sha-1">{{ previous_version.hash }}</td>
+		<td class="remote-url"><a href="http://{{ remote_host }}{% url 'file_dispatcher' %}?location={% if location != "/" %}{{ location|urlencode }}{% endif %}&filename={{ file.filename }}">{{ file.filename }}</a></td>
+                <td class="move"></td>
+                <td class="remove"></td>
+            </tr>
+            {% endfor %}
+        {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+</div>
+
+<div class="row-fluid">
+    <div id="alert-dialog" class="modal hide fade" role="dialog">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <label id="alert-dialog-label" class="label label-important">Please read: a personal appeal from Filebox founder</label>
+        </div>
+        <div class="modal-body">
+            <p id="alert-dialog-message"></p>
+        </div>
+        <div class="modal-footer">
+            <p><a id="alert-dialog-close-button" class="btn" href="#">I got it, please hide this message</a></p>
+        </div>
+    </div>
+    
+    <div id="fileupload-form" class="modal hide fade" role="dialog">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <label class="label label-inverse">Uploadmonkey</label>
+        </div>
+        <div class="modal-body">
+            <div><textarea id="filedescription" class="input-xlarge" name="description" rows="3" placeholder="Description"></textarea></div>
+            <div><input id="filepath" name="file" type="file"><label id="filelabel" class="label" style="display: none;"></label></div>
+            <div><button id="fileupload" type="button" class="btn btn-primary" style="display: none;">Shut up and take my file</button></div>
+        </div>
+        <div class="modal-footer">
+            <div id="progressbar-container" style="display: none;">
+                <div class="progress progress-wrapper">
+                    <div class="progressbar bar" style="width: 0%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="mv-form" class="modal hide fade" role="dialog">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <span id="mv-form-header" class="label label-info"></span>
+            <input id="mv-filename" type="hidden">
+        </div>
+        <div class="modal-body">
+            {{ folder_tree|safe }}
+        </div>
+        <div class="modal-footer">
+            <p>
+                <a id="mv-button" class="btn btn-primary disabled" href="#">Move</a>
+                <a id="cancel-mv-button" class="btn" href="#">Don't move</a>
+            </p>
+        </div>
+    </div>
+    
+    <div id="remove-form" class="modal hide fade" role="dialog">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <label class="label label-important">Please read: a personal appeal from Filebox founder</label>
+        </div>
+        <div class="modal-body">
+            <div id="remove-alert" class="alert alert-block alert-error fade-in">
+                <p id="remove-alert-message"></p>
+                <p>This operation is irreversible!</p>
+                <p>This action will be logged</p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <p>
+                <a id="remove-button" class="btn btn-danger" href="#">Pulverise it!</a>
+                <a id="cancel-remove-button" class="btn" href="#">Changed my mind, please cancel!</a>
+            </p>
+        </div>
+    </div>
+    
+    <div id="folderadd-form" class="modal hide fade" role="dialog">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <label class="label label-inverse">Need more folders</label>
+        </div>
+        <div class="modal-body">
+            <div><input id="foldername" class="input-xlarge" name="foldername" placeholder="Folder name" type="text"></div>
+        </div>
+        <div class="modal-footer">
+            <p>
+                <a id="folderadd-button" class="btn btn-primary" href="#">Create</a>
+            </p>
+        </div>
+    </div>
+    
+    <div style="display: none;">
+        <input id="location" name="location" type="hidden" value="{{ location }}">
+    </div>
+</div>
+{% endblock %}

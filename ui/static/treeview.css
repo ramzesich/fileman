@@ -1,0 +1,39 @@
+.css-treeview label.chosen-folder {
+    font-weight: bold;
+}
+
+.css-treeview div + ul {
+    margin: 0 0 0 22px;
+}
+
+.css-treeview i {
+    padding-right: 6px;
+}
+
+.css-treeview i,
+.css-treeview label {
+    cursor: pointer;
+}
+
+.css-treeview i + label + ul {
+    margin: 0 0 0 22px;
+}
+
+.css-treeview label {
+    display: inline-block;
+}
+
+.css-treeview label i {
+    margin-left: 6px;
+}
+
+.css-treeview > ul ul {
+    display: none;
+}
+
+.css-treeview ul,
+.css-treeview li {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}

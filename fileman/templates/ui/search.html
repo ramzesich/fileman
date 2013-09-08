@@ -1,0 +1,38 @@
+{% extends "ui/main.html" %}
+
+{% block title %}Filebox search results{% endblock %}
+
+{% block content %}
+<div class="row-fluid">
+  {% if items %}
+  <table class="table table-hover">
+    <thead>
+      <tr>
+	<th></th>	
+	<th>Name</th>
+	<th>Description</th>
+	<th>Replication</th>
+	<th>Uploaded at</th>
+	<th>SHA-1</th>
+	<th>Version</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for file in items %}
+	<tr>
+	  <td class="toggle-versions"><i class="icon-file" title="file"></i></td>
+	  <td class="url"><a href="{% url 'file_dispatcher' %}?location={{ file.location|urlencode }}&filename={{ file.filename }}">{{ file.filename }}</a></td>
+          <td class="description">{{ file.description }}</td>
+          <td class="replication"><button data-itemname="{{ file.filename }}" data-hashsum="{{ file.hash }}" class="btn btn-small btn-replication {% if file.replicate %}btn-success{% else %}btn-danger{% endif %}">{% if file.replicate %}On{% else %}Off{% endif %}</button></td>
+          <td class="upload-datetime">{{ file.upload_datetime }}</td>
+          <td class="sha-1">{{ file.hash }}</td>
+	  <td class="recent">{% if file.default %}<span class="badge badge-success">Recent</span>{% else %}<span class="badge">Previous</span>{% endif %}</td>
+	</tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="well well-large"><h3>No files found</h3></div>
+  {% endif %}
+</div>
+{% endblock %}
